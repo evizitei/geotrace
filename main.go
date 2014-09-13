@@ -10,8 +10,6 @@ func main() {
 	gorest.RegisterService(new(GeoIpService))
 	http.Handle("/", gorest.Handle())
 	http.ListenAndServe(":3001", nil)
-	//ip := "81.2.69.142"
-	//ip := "50.160.16.241"
 }
 
 type GeoIpService struct {
