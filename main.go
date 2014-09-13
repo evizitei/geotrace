@@ -1,33 +1,24 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"net"
+	"net/http"
 
-	"github.com/oschwald/geoip2-golang"
+	"code.google.com/p/gorest"
 )
 
-func countryLookup(ipString string) string {
-
-	db, err := geoip2.Open("GeoLite2-Country.mmdb")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer db.Close()
-
-	ip := net.ParseIP(ipString)
-	record, err := db.Country(ip)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return record.Country.Names["en"]
+func main() {
+	gorest.RegisterService(new(GeoIpService))
+	http.Handle("/", gorest.Handle())
+	http.ListenAndServe(":3001", nil)
+	//ip := "81.2.69.142"
+	//ip := "50.160.16.241"
 }
 
-func main() {
-	// If you are using strings that may be invalid, check that ip is not nil
-	//ip := "81.2.69.142"
-	ip := "50.160.16.241"
-	country := countryLookup(ip)
-	fmt.Printf("English country name: %v\n", country)
+type GeoIpService struct {
+	gorest.RestService `root:"/geoip" consumes:"application/json" produces:"application/json"`
+	lookup             gorest.EndPoint `method:"GET" path:"/lookup/{ip:string}" output:"string"`
+}
+
+func (serv GeoIpService) Lookup(ip string) string {
+	return countryLookup(ip)
 }
